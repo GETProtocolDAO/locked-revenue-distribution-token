@@ -1,0 +1,8 @@
+{
+  "filter_paths": "lib",
+  "solc_remaps": [
+    "erc20/=lib/erc20/contracts/",
+    "erc20-helper/=lib/erc20-helper/src/",
+    "revenue-distribution-token/=lib/revenue-distribution-token/contracts/"
+  ]
+}
