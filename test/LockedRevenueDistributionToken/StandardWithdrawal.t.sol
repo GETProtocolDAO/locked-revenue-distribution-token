@@ -337,6 +337,11 @@ contract StandardWithdrawalTest is LockedRevenueDistributionTokenBaseTest {
             assertEq(request_.unlockedAt, block.timestamp + (26 - i_) * weeks_);
 
             vault.executeWithdrawalRequest(i_);
+
+            // Update vesting schedule to catch redistributed fees within next cycle.
+            vault.updateVestingSchedule();
+            vm.warp(block.timestamp + 2 weeks);
+
             assertEq(vault.balanceOfAssets(alice), 0);
             assertEq(vault.balanceOf(alice), 0);
             assertEq(asset.balanceOf(alice), expectedAssets_[i_]);
@@ -348,7 +353,7 @@ contract StandardWithdrawalTest is LockedRevenueDistributionTokenBaseTest {
             vm.startPrank(bob);
             vault.redeem(vault.balanceOf(bob), bob, bob);
             vm.stopPrank();
-            assertEq(asset.balanceOf(address(vault)), 0);
+            assertLe(asset.balanceOf(address(vault)), 1);
         }
     }
 
@@ -390,6 +395,10 @@ contract StandardWithdrawalTest is LockedRevenueDistributionTokenBaseTest {
         request_ = vault.withdrawalRequests(alice, 0);
         assertEq(vault.balanceOf(alice), 0);
         assertEq(asset.balanceOf(alice), 1.025 ether - 1);
+
+        // Update vesting schedule to catch redistributed fees within next cycle.
+        vault.updateVestingSchedule();
+        vm.warp(block.timestamp + 2 weeks);
 
         // Check that difference between request and underlying is shared. e.g. Bob would get the full 0.3 ether from
         // second distribution.
@@ -495,5 +504,33 @@ contract StandardWithdrawalTest is LockedRevenueDistributionTokenBaseTest {
         assertEq(request_[2].shares, 0);
         assertEq(request_[2].assets, 0);
         assertEq(request_[2].unlockedAt, 0);
+    }
+
+    function testFrontRunWithdraw() public {
+        address eve = address(0x0E5E);
+
+        // first Alice deposit
+        _setUpDepositor(alice, 1 ether);
+        // We add some profit
+        asset.mint(address(vault), 1 ether);
+        vault.updateVestingSchedule();
+        vm.warp(block.timestamp + 2 days);
+        // Alice starts a withdrawal request
+        vault.createWithdrawalRequest(1 ether);
+        // we increase time to reach the end of the lock
+        vm.warp(block.timestamp + 26 weeks);
+        // Bob deposit
+        _setUpDepositor(bob, 1 ether);
+        vm.stopPrank();
+        // Alice execute the withdraw
+        vm.startPrank(alice);
+        vault.executeWithdrawalRequest(0);
+
+        // Eve deposit
+        vm.stopPrank();
+        _setUpDepositor(eve, 1 ether);
+        vm.stopPrank();
+
+        assertApproxEqRel(vault.balanceOf(eve), vault.balanceOf(bob), 10e6);
     }
 }
