@@ -22,7 +22,8 @@ abstract contract LockedRevenueDistributionTokenBaseTest is Test {
             address(asset),
             type(uint96).max,
             instantWithdrawalFee,
-            26 weeks
+            26 weeks,
+            0
         );
         vm.warp(start); // Warp to non-zero timestamp
     }

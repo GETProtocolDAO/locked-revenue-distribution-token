@@ -7,6 +7,8 @@ CHAIN_ID=1
 PRECISION=`echo '2^96 - 1' | bc`
 INSTANT_WITHDRAWAL_FEE=15
 LOCK_TIME_WEEKS=26
+INITIAL_SEED=1000000000000000000
+VERIFY=1
 
 .PHONY: myth
 myth:
@@ -25,22 +27,33 @@ deploy-mockerc20:
 		--chain $(CHAIN_ID) \
 		--constructor-args "$(NAME)" "$(SYMBOL)"
 
+.PHONY: mint-mockerc20
+mint-mockerc20:
+	@cast send $(ASSET) "mint(address,uint256)" $(FROM) $(INITIAL_SEED) \
+		--rpc-url $(RPC_URL) \
+		--from $(FROM) \
+		--private-key $(PRIVATE_KEY)
+
 .PHONY: deploy-lrdt
 deploy-lrdt:
+	@cast send $(ASSET) "approve(address,uint256)" $$(cast compute-address $(FROM) --nonce $$(($$(cast nonce $(FROM)) + 1)) | sed 's/Computed Address: //') "$(INITIAL_SEED)" \
+		--private-key $(PRIVATE_KEY)
 	@forge create src/LockedRevenueDistributionToken.sol:LockedRevenueDistributionToken \
 		--rpc-url $(RPC_URL) \
 		--from $(FROM) \
 		--private-key $(PRIVATE_KEY) \
 		--chain $(CHAIN_ID) \
-		--verify \
-		--constructor-args "$(NAME)" "$(SYMBOL)" "$(OWNER)" "$(ASSET)" $(PRECISION) $(INSTANT_WITHDRAWAL_FEE) $$(($(LOCK_TIME_WEEKS) * 7 * 24 * 60 * 60))
+		$(if $(VERIFY == 1),--verify) \
+		--constructor-args "$(NAME)" "$(SYMBOL)" "$(OWNER)" "$(ASSET)" $(PRECISION) $(INSTANT_WITHDRAWAL_FEE) $$(($(LOCK_TIME_WEEKS) * 7 * 24 * 60 * 60)) $(INITIAL_SEED)
 
 .PHONY: deploy-glrdt
 deploy-glrdt:
+	@cast send $(ASSET) "approve(address,uint256)" $$(cast compute-address $(FROM) --nonce $$(($$(cast nonce $(FROM)) + 1)) | sed 's/Computed Address: //') "$(INITIAL_SEED)" \
+		--private-key $(PRIVATE_KEY)
 	@forge create src/GovernanceLockedRevenueDistributionToken.sol:GovernanceLockedRevenueDistributionToken \
 		--rpc-url $(RPC_URL) \
 		--from $(FROM) \
 		--private-key $(PRIVATE_KEY) \
 		--chain $(CHAIN_ID) \
-		--verify \
-		--constructor-args "$(NAME)" "$(SYMBOL)" "$(OWNER)" "$(ASSET)" $(PRECISION) $(INSTANT_WITHDRAWAL_FEE) $$(($(LOCK_TIME_WEEKS) * 7 * 24 * 60 * 60))
+		$(if $(VERIFY == 1),--verify) \
+		--constructor-args "$(NAME)" "$(SYMBOL)" "$(OWNER)" "$(ASSET)" $(PRECISION) $(INSTANT_WITHDRAWAL_FEE) $$(($(LOCK_TIME_WEEKS) * 7 * 24 * 60 * 60)) $(INITIAL_SEED)

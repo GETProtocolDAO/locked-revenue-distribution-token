@@ -86,6 +86,7 @@ The following defaults are set and can be overridden by passing parameters to th
 - PRECISION=`type(uint96).max`=`2^96 - 1`
 - INSTANT_WITHDRAWAL_FEE=15
 - LOCK_TIME_WEEKS=26
+- INITIAL_SEED=`1 ether`=1000000000000000000
 
 FROM & PRIVATE_KEY have been set to Anvil account 0 defaults. Ensure to provide a new secured key for production deployments.
 
@@ -94,6 +95,20 @@ Deployment & verification can be ran with:
 ```
 ETHERSCAN_API_KEY=<key> make deploy-glrdt NAME="xASSET" RPC_URL="<url>" FROM="<address>" PRIVATE_KEY="<key>" SYMBOL="xASSET" OWNER="<address>" ASSET="<address>" INSTANT_WITHDRAWAL_FEE="<0-99,integer>" LOCK_TIME_WEEKS"<integer>"
 ```
+
+Deployments can be tested locally using a mock ERC20 contract:
+
+```
+make deploy-mockerc20
+make mint-mockerc20 ASSET="<address>"
+make deploy-glrdt NAME="xASSET" SYMBOL="xASSET" OWNER="<address>" ASSET="<address>" VERIFY=0
+```
+
+#### Setting the INITIAL_SEED
+
+When the vault is first deployed and there are a low number of shares issued it is possible for an adversary to perform a [donation attack](https://github.com/OpenZeppelin/openzeppelin-contracts/issues/3706) wherein they transfer rewards directly to the contract that creates a skew of precision between the assets within the contract and the shares issued. There are a number of protection mechanisms to prevent this and this is resolved in LRDT by burning a number of shares at the time of deployment to ensure that the precision between shares and assets cannot differ too greatly. By default this has been set to `1 ether` and this is required to be available to the constructor at the time of deployment.
+
+This means that the contract address must be calculated in advance so that an approval can be set on the asset to be initialized. Within the deployment scripts this is handled using `cast compute-address`.
 
 ### Static Analysis
 
