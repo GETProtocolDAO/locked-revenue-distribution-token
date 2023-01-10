@@ -183,12 +183,18 @@ contract LockedRevenueDistributionToken is ILockedRevenueDistributionToken, Reve
         // Update "y-intercept" to reflect current available asset.
         freeAssets_ = (freeAssets = totalAssets());
 
+        // Carry over remaining time.
+        uint256 vestingTime_ = VESTING_PERIOD;
+        if (vestingPeriodFinish > block.timestamp) {
+            vestingTime_ = VESTING_PERIOD + (vestingPeriodFinish - block.timestamp);
+        }
+
         // Calculate slope.
         issuanceRate_ =
-            (issuanceRate = ((ERC20(asset).balanceOf(address(this)) - freeAssets_) * precision) / VESTING_PERIOD);
+            (issuanceRate = ((ERC20(asset).balanceOf(address(this)) - freeAssets_) * precision) / vestingTime_);
 
         // Update timestamp and period finish.
-        vestingPeriodFinish = (lastUpdated = block.timestamp) + VESTING_PERIOD;
+        vestingPeriodFinish = (lastUpdated = block.timestamp) + vestingTime_;
 
         emit IssuanceParamsUpdated(freeAssets_, issuanceRate_);
         emit VestingScheduleUpdated(msg.sender, vestingPeriodFinish);
