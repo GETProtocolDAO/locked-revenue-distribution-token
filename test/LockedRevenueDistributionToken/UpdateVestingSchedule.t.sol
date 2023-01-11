@@ -4,6 +4,17 @@ pragma solidity ^0.8.7;
 import "./LockedRevenueDistributionTokenBaseTest.t.sol";
 
 contract UpdateVestingScheduleTest is LockedRevenueDistributionTokenBaseTest {
+    function testCannotUpdateVestingScheduleZeroSupply() public {
+        vm.expectRevert("LRDT:UVS:ZERO_SUPPLY");
+        vault.updateVestingSchedule();
+    }
+
+    function testCannotUpdateVestingScheduleZeroIssuanceRate() public {
+        _setUpDepositor(alice, 1 ether);
+        vm.expectRevert("LRDT:UVS:ZERO_ISSUANCE_RATE");
+        vault.updateVestingSchedule();
+    }
+
     function testUpdateVestingScheduleAsNonOwner() public {
         vm.startPrank(alice);
         asset.mint(alice, 1 ether);
@@ -53,10 +64,5 @@ contract UpdateVestingScheduleTest is LockedRevenueDistributionTokenBaseTest {
         vm.warp(block.timestamp + 2 weeks - 8 hours); // Warp to Monday 4am
         vault.updateVestingSchedule();
         assertEq(vault.vestingPeriodFinish(), block.timestamp + 2 weeks + 8 hours); // Expect Monday 12pm
-    }
-
-    function testCannotUpdateVestingScheduleZeroSupply() public {
-        vm.expectRevert("LRDT:UVS:ZERO_SUPPLY");
-        vault.updateVestingSchedule();
     }
 }

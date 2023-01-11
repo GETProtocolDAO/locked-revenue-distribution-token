@@ -224,6 +224,8 @@ contract LockedRevenueDistributionToken is ILockedRevenueDistributionToken, Reve
         issuanceRate_ =
             (issuanceRate = ((ERC20(asset).balanceOf(address(this)) - freeAssets_) * precision) / vestingTime_);
 
+        require(issuanceRate_ > 0, "LRDT:UVS:ZERO_ISSUANCE_RATE");
+
         // Update timestamp and period finish.
         vestingPeriodFinish = (lastUpdated = block.timestamp) + vestingTime_;
 
