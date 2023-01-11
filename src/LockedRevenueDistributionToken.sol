@@ -49,9 +49,7 @@ contract LockedRevenueDistributionToken is ILockedRevenueDistributionToken, Reve
         uint256 precision_,
         uint256 instantWithdrawalFee_,
         uint256 lockTime_
-    )
-        RevenueDistributionToken(name_, symbol_, owner_, asset_, precision_)
-    {
+    ) RevenueDistributionToken(name_, symbol_, owner_, asset_, precision_) {
         instantWithdrawalFee = instantWithdrawalFee_;
         lockTime = lockTime_;
     }
@@ -195,11 +193,39 @@ contract LockedRevenueDistributionToken is ILockedRevenueDistributionToken, Reve
     }
 
     /**
+     * @inheritdoc ILockedRevenueDistributionToken
+     * @dev Reentrancy modifier provided within the internal function call.
+     */
+    function deposit(uint256 assets_, address receiver_, uint256 minShares_)
+        external
+        virtual
+        override
+        returns (uint256 shares_)
+    {
+        shares_ = deposit(assets_, receiver_);
+        require(shares_ >= minShares_, "LRDT:D:SLIPPAGE_PROTECTION");
+    }
+
+    /**
+     * @inheritdoc ILockedRevenueDistributionToken
+     * @dev Reentrancy modifier provided within the internal function call.
+     */
+    function mint(uint256 shares_, address receiver_, uint256 maxAssets_)
+        external
+        virtual
+        override
+        returns (uint256 assets_)
+    {
+        assets_ = mint(shares_, receiver_);
+        require(assets_ <= maxAssets_, "LRDT:M:SLIPPAGE_PROTECTION");
+    }
+
+    /**
      * @inheritdoc RevenueDistributionToken
      * @dev Will check for withdrawal fee exemption present on owner.
      */
     function redeem(uint256 shares_, address receiver_, address owner_)
-        external
+        public
         virtual
         override
         nonReentrant
@@ -215,11 +241,25 @@ contract LockedRevenueDistributionToken is ILockedRevenueDistributionToken, Reve
     }
 
     /**
+     * @inheritdoc ILockedRevenueDistributionToken
+     * @dev Reentrancy modifier provided within the internal function call.
+     */
+    function redeem(uint256 shares_, address receiver_, address owner_, uint256 minAssets_)
+        external
+        virtual
+        override
+        returns (uint256 assets_)
+    {
+        assets_ = redeem(shares_, receiver_, owner_);
+        require(assets_ >= minAssets_, "LRDT:R:SLIPPAGE_PROTECTION");
+    }
+
+    /**
      * @inheritdoc RevenueDistributionToken
      * @dev Will check for withdrawal fee exemption present on owner.
      */
     function withdraw(uint256 assets_, address receiver_, address owner_)
-        external
+        public
         virtual
         override
         nonReentrant
@@ -232,6 +272,20 @@ contract LockedRevenueDistributionToken is ILockedRevenueDistributionToken, Reve
         if (fee_ > 0) {
             emit WithdrawalFeePaid(msg.sender, receiver_, owner_, fee_);
         }
+    }
+
+    /**
+     * @inheritdoc ILockedRevenueDistributionToken
+     * @dev Reentrancy modifier provided within the internal function call.
+     */
+    function withdraw(uint256 assets_, address receiver_, address owner_, uint256 maxShares_)
+        external
+        virtual
+        override
+        returns (uint256 shares_)
+    {
+        shares_ = withdraw(assets_, receiver_, owner_);
+        require(shares_ <= maxShares_, "LRDT:W:SLIPPAGE_PROTECTION");
     }
 
     /*░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░

@@ -96,7 +96,7 @@ contract RevenueDistributionToken is IRevenueDistributionToken, ERC20 {
     /*** Staker Functions ***/
     /************************/
 
-    function deposit(uint256 assets_, address receiver_) external virtual override nonReentrant returns (uint256 shares_) {
+    function deposit(uint256 assets_, address receiver_) public virtual override nonReentrant returns (uint256 shares_) {
         _mint(shares_ = previewDeposit(assets_), assets_, receiver_, msg.sender);
     }
 
@@ -114,7 +114,7 @@ contract RevenueDistributionToken is IRevenueDistributionToken, ERC20 {
         _mint(shares_ = previewDeposit(assets_), assets_, receiver_, msg.sender);
     }
 
-    function mint(uint256 shares_, address receiver_) external virtual override nonReentrant returns (uint256 assets_) {
+    function mint(uint256 shares_, address receiver_) public virtual override nonReentrant returns (uint256 assets_) {
         _mint(shares_, assets_ = previewMint(shares_), receiver_, msg.sender);
     }
 
