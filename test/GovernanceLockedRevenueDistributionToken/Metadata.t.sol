@@ -31,8 +31,8 @@ contract MetadataTest is GovernanceLockedRevenueDistributionTokenBaseTest {
 
             (uint32 fromBlock_, uint96 votes_) = vault.checkpoints(alice, uint32(i_));
             assertEq(fromBlock_, block.number);
-            assertEq(votes_, 1 ether * i_); // Checkpoint is one value behind current.
-            assertEq(vault.getCurrentVotes(alice), 1 ether * (i_ + 1)); // Current.
+            assertEq(votes_, 1 ether * (i_ + 1));
+            assertEq(vault.getCurrentVotes(alice), 1 ether * (i_ + 1));
 
             vm.roll(block.number + 1);
         }
