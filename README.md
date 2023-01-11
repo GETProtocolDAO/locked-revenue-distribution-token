@@ -12,7 +12,7 @@ GovernanceLockedRevenueDistributionToken (GLRDT) extends LockedRevenueDistributi
 
 - [ERC20](https://github.com/maple-labs/erc20/tree/v1.0.0) implements the ERC-20 token standard and transfers.
   - [RevenueDistributionToken](https://github.com/maple-labs/revenue-distribution-token/tree/v1.0.1) implements reward distributions and the ERC-4626 vault standard.
-    - [LockedRevenueDistributionToken](src/LockedRevenueDistributionToken.sol) implements time-restricted and fee-restricted withdrawals.
+    - [LockedRevenueDistributionToken](src/LockedRevenueDistributionToken.sol) implements time-restricted and fee-restricted withdrawals, and [ERC5143](https://eips.ethereum.org/EIPS/eip-5143) slippage protection.
       - [GovernanceLockedRevenueDistributionToken](src/GovernanceLockedRevenueDistributionToken.sol) implements Compound-compatible governance voting.
 
 It is possible to use LRDT without the governance properties of GLRDT by inheriting or deploying it directly.
@@ -32,7 +32,7 @@ LRDT has been designed to be a foundation for governance tokens, which often req
 1. Time-based 'Standard' withdrawals, not subject to a fee.
 2. Fee-based 'Instant' withdrawals, available instantly.
 
-This results in a system wherein participants must be subject to withdrawal conditions thereby demonstrating a longer term horizon and commitment to the protocol.
+This results in a system wherein participants must be subject to withdrawal conditions thereby demonstrating a longer term horizon and commitment to the protocol. Slippage protection has been added by implementing the [ERC5143](https://eips.ethereum.org/EIPS/eip-5143) standard.
 
 ![Deposit & Withdrawal Flow](docs/images/deposit-withdrawal-flow.jpg)
 

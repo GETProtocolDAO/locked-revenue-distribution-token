@@ -167,7 +167,7 @@ interface ILockedRevenueDistributionToken {
      * @notice Creates a new withdrawal request for future execution using the shares conversion at the point of
      * request. May only be executed after the unlock date.
      * @notice Transfers shares to the vault contract to reserve them, reducing share balance.
-     * @param  shares_ Number of shares to redeem upon unlock.
+     * @param  shares_ Amount of shares to redeem upon unlock.
      */
     function createWithdrawalRequest(uint256 shares_) external;
 
@@ -192,6 +192,48 @@ interface ILockedRevenueDistributionToken {
      */
     function updateVestingSchedule() external returns (uint256 issuanceRate_, uint256 freeAssets_);
 
+    /**
+     * @notice ERC5143 slippage-protected deposit method. The transaction will revert if the shares to be returned is
+     * less than minShares_.
+     * @param  assets_    Amount of assets to deposit.
+     * @param  receiver_  The receiver of the shares.
+     * @param  minShares_ Minimum amount of shares to be returned.
+     * @return shares_    Amount of shares returned to receiver_.
+     */
+    function deposit(uint256 assets_, address receiver_, uint256 minShares_) external returns (uint256 shares_);
+
+    /**
+     * @notice ERC5143 slippage-protected mint method. The transaction will revert if the assets to be deducted is
+     * greater than maxAssets_.
+     * @param  shares_    Amount of shares to mint.
+     * @param  receiver_  The receiver of the shares.
+     * @param  maxAssets_ Maximum amount of assets to be deducted.
+     * @return assets_    Amount of deducted when minting shares.
+     */
+    function mint(uint256 shares_, address receiver_, uint256 maxAssets_) external returns (uint256 assets_);
+
+    /**
+     * @notice ERC5143 slippage-protected redeem method. The transaction will revert if the assets to be returned is
+     * less than minAssets_.
+     * @param  shares_    Amount of shares to redeem.
+     * @param  receiver_  The receiver of the assets.
+     * @param  owner_     Owner of shares making redemption.
+     * @param  minAssets_ Minimum amount of assets to be returned.
+     * @return assets_    Amount of assets returned.
+     */
+    function redeem(uint256 shares_, address receiver_, address owner_, uint256 minAssets_) external returns (uint256 assets_);
+
+    /**
+     * @notice ERC5143 slippage-protected withdraw method. The transaction will revert if the shares to be deducted is
+     * greater than maxShares_.
+     * @param  assets_    Amount of assets to withdraw.
+     * @param  receiver_  The receiver of the assets.
+     * @param  owner_     Owner of shares making withdrawal.
+     * @param  maxShares_ Minimum amount of shares to be deducted.
+     * @return shares_    Amount of shares deducted.
+     */
+    function withdraw(uint256 assets_, address receiver_, address owner_, uint256 maxShares_) external returns (uint256 shares_);
+
     /*░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
     ░░░░                          View Functions                           ░░░░
     ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░*/
@@ -199,7 +241,7 @@ interface ILockedRevenueDistributionToken {
     /**
      * @notice Previews a redemption of shares for owner. Applies withdrawal fee if owner does not have an exemption.
      * @param  owner_  Owner of shares making redemption.
-     * @param  shares_ Number of shares to redeem.
+     * @param  shares_ Amount of shares to redeem.
      * @return assets_ Assets redeemed for shares for owner.
      * @param  fee_    The assets paid as fee.
      */
@@ -208,7 +250,7 @@ interface ILockedRevenueDistributionToken {
     /**
      * @notice Previews a withdrawal of assets for owner. Applies withdrawal fee if owner does not have an exemption.
      * @param  owner_  Owner of shares makeing withdrawal.
-     * @param  assets_ Number of assets to withdraw.
+     * @param  assets_ Amount of assets to withdraw.
      * @return shares_ Shares needed to be burned for owner.
      * @param  fee_    The assets paid as fee.
      */
@@ -220,7 +262,7 @@ interface ILockedRevenueDistributionToken {
      * @param  pos_     Index/position of the withdrawal request to be previewed.
      * @param  owner_   Owner of the withdrawal request.
      * @return request_ The WithdrawalRequest struct within storage.
-     * @return assets_  Number of assets returned to owner if withdrawn.
+     * @return assets_  Amount of assets returned to owner if withdrawn.
      * @return fee_     The assets paid as fee.
      */
     function previewWithdrawalRequest(uint256 pos_, address owner_)
