@@ -3,6 +3,7 @@ pragma solidity ^0.8.7;
 
 import {RevenueDistributionToken} from "revenue-distribution-token/RevenueDistributionToken.sol";
 import {ERC20} from "erc20/ERC20.sol";
+import {ERC20Helper} from "erc20-helper/ERC20Helper.sol";
 import {ILockedRevenueDistributionToken} from "./interfaces/ILockedRevenueDistributionToken.sol";
 
 /*░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -48,12 +49,31 @@ contract LockedRevenueDistributionToken is ILockedRevenueDistributionToken, Reve
         address asset_,
         uint256 precision_,
         uint256 instantWithdrawalFee_,
-        uint256 lockTime_
-    )
-        RevenueDistributionToken(name_, symbol_, owner_, asset_, precision_)
-    {
+        uint256 lockTime_,
+        uint256 initialSeed_
+    ) RevenueDistributionToken(name_, symbol_, owner_, asset_, precision_) {
         instantWithdrawalFee = instantWithdrawalFee_;
         lockTime = lockTime_;
+
+        // We initialize the contract by seeding an amount of shares and then burning them. This prevents donation
+        // attacks from affecting the precision of the shares:assets rate.
+        // See: https://github.com/OpenZeppelin/openzeppelin-contracts/issues/3706
+        if (initialSeed_ > 0) {
+            address caller_ = msg.sender;
+            address receiver_ = address(0);
+
+            // RDT.deposit() cannot be called within the constructor as this uses immutable variables.
+            // ERC20._mint()
+            totalSupply += initialSeed_;
+            unchecked { balanceOf[receiver_] += initialSeed_; }
+            emit Transfer(address(0), receiver_, initialSeed_);
+
+            // RDT._mint()
+            freeAssets = initialSeed_;
+            emit Deposit(caller_, receiver_, initialSeed_, initialSeed_);
+            emit IssuanceParamsUpdated(freeAssets, 0);
+            require(ERC20Helper.transferFrom(asset_, msg.sender, address(this), initialSeed_), "LRDT:C:TRANSFER_FROM");
+        }
     }
 
     /*░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░

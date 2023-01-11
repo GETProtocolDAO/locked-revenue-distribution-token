@@ -55,7 +55,7 @@ contract GovernanceLockedRevenueDistributionToken is
         uint256 instantWithdrawalFee_,
         uint256 lockTime_
     )
-        LockedRevenueDistributionToken(name_, symbol_, owner_, asset_, precision_, instantWithdrawalFee_, lockTime_)
+        LockedRevenueDistributionToken(name_, symbol_, owner_, asset_, precision_, instantWithdrawalFee_, lockTime_, 0)
     {}
 
     /*░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
