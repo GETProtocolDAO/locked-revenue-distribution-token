@@ -123,14 +123,14 @@ contract GovernanceLockedRevenueDistributionToken is
     {
         Checkpoint storage checkpoint_ = userCheckpoints[account_][pos_];
         fromBlock_ = checkpoint_.fromBlock;
-        votes_ = uint96(checkpoint_.votes);
+        votes_ = checkpoint_.votes;
     }
 
     /**
      * @inheritdoc IGovernanceLockedRevenueDistributionToken
      */
     function numCheckpoints(address account_) public view virtual override returns (uint32 numCheckpoints_) {
-        numCheckpoints_ = uint32(userCheckpoints[account_].length);
+        numCheckpoints_ = _toUint32(userCheckpoints[account_].length);
     }
 
     /**
@@ -149,7 +149,7 @@ contract GovernanceLockedRevenueDistributionToken is
      * @inheritdoc IGovernanceLockedRevenueDistributionToken
      */
     function getCurrentVotes(address account_) external view virtual override returns (uint96 votes_) {
-        votes_ = uint96(getVotes(account_));
+        votes_ = _toUint96(getVotes(account_));
     }
 
     /**
@@ -177,7 +177,7 @@ contract GovernanceLockedRevenueDistributionToken is
         override
         returns (uint96 votes_)
     {
-        votes_ = uint96(getPastVotes(account_, blockNumber_));
+        votes_ = _toUint96(getPastVotes(account_, blockNumber_));
     }
 
     /**
@@ -288,9 +288,7 @@ contract GovernanceLockedRevenueDistributionToken is
         }
 
         return
-            high_ == 0
-            ? 0
-            : (isVotes_ ? _unsafeAccess(ckpts, high_ - 1).votes : _unsafeAccess(ckpts, high_ - 1).shares);
+            high_ == 0 ? 0 : (isVotes_ ? _unsafeAccess(ckpts, high_ - 1).votes : _unsafeAccess(ckpts, high_ - 1).shares);
     }
 
     /**
@@ -324,10 +322,7 @@ contract GovernanceLockedRevenueDistributionToken is
         Checkpoint[] storage ckpts,
         function(uint256, uint256) view returns (uint256) op_,
         uint256 delta_
-    )
-        private
-        returns (uint256 oldWeight_, uint256 newWeight_)
-    {
+    ) private returns (uint256 oldWeight_, uint256 newWeight_) {
         uint256 pos_ = ckpts.length;
 
         Checkpoint memory oldCkpt_ = pos_ == 0 ? Checkpoint(0, 0, 0) : _unsafeAccess(ckpts, pos_ - 1);
@@ -336,14 +331,14 @@ contract GovernanceLockedRevenueDistributionToken is
         newWeight_ = op_(oldWeight_, delta_);
 
         if (pos_ > 0 && oldCkpt_.fromBlock == block.number) {
-            _unsafeAccess(ckpts, pos_ - 1).shares = uint112(newWeight_);
-            _unsafeAccess(ckpts, pos_ - 1).votes = uint112(convertToAssets(newWeight_));
+            _unsafeAccess(ckpts, pos_ - 1).shares = _toUint96(newWeight_);
+            _unsafeAccess(ckpts, pos_ - 1).votes = _toUint96(convertToAssets(newWeight_));
         } else {
             ckpts.push(
                 Checkpoint({
-                    fromBlock: uint32(block.number),
-                    shares: uint112(newWeight_),
-                    votes: uint112(convertToAssets(newWeight_))
+                    fromBlock: _toUint32(block.number),
+                    shares: _toUint96(newWeight_),
+                    votes: _toUint96(convertToAssets(newWeight_))
                 })
             );
         }
@@ -367,6 +362,26 @@ contract GovernanceLockedRevenueDistributionToken is
      */
     function _subtract(uint256 a_, uint256 b_) private pure returns (uint256 result_) {
         return a_ - b_;
+    }
+    /**
+     * @notice Returns the downcasted uint32 from uint256, reverting on overflow (when the input is greater than
+     * largest uint32). Counterpart to Solidity's `uint32` operator.
+     * @param  value_ Input value to cast.
+     */
+
+    function _toUint32(uint256 value_) private pure returns (uint32) {
+        require(value_ <= type(uint32).max, "GLRDT:CAST_EXCEEDS_32_BITS");
+        return uint32(value_);
+    }
+
+    /**
+     * @notice Returns the downcasted uint96 from uint256, reverting on overflow (when the input is greater than
+     * largest uint96). Counterpart to Solidity's `uint96` operator.
+     * @param  value_ Input value to cast.
+     */
+    function _toUint96(uint256 value_) private pure returns (uint96) {
+        require(value_ <= type(uint96).max, "GLRDT:CAST_EXCEEDS_96_BITS");
+        return uint96(value_);
     }
 
     /**
