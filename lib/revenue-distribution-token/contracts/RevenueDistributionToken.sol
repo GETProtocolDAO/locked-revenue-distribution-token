@@ -147,7 +147,7 @@ contract RevenueDistributionToken is IRevenueDistributionToken, ERC20 {
     /*** Internal Functions ***/
     /**************************/
 
-    function _mint(uint256 shares_, uint256 assets_, address receiver_, address caller_) internal {
+    function _mint(uint256 shares_, uint256 assets_, address receiver_, address caller_) internal virtual {
         require(receiver_ != address(0), "RDT:M:ZERO_RECEIVER");
         require(shares_   != uint256(0), "RDT:M:ZERO_SHARES");
         require(assets_   != uint256(0), "RDT:M:ZERO_ASSETS");
@@ -164,7 +164,7 @@ contract RevenueDistributionToken is IRevenueDistributionToken, ERC20 {
         require(ERC20Helper.transferFrom(asset, caller_, address(this), assets_), "RDT:M:TRANSFER_FROM");
     }
 
-    function _burn(uint256 shares_, uint256 assets_, address receiver_, address owner_, address caller_) internal {
+    function _burn(uint256 shares_, uint256 assets_, address receiver_, address owner_, address caller_) internal virtual {
         require(receiver_ != address(0), "RDT:B:ZERO_RECEIVER");
         require(shares_   != uint256(0), "RDT:B:ZERO_SHARES");
         require(assets_   != uint256(0), "RDT:B:ZERO_ASSETS");
