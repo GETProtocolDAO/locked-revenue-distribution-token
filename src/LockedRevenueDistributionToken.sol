@@ -49,9 +49,7 @@ contract LockedRevenueDistributionToken is ILockedRevenueDistributionToken, Reve
         uint256 precision_,
         uint256 instantWithdrawalFee_,
         uint256 lockTime_
-    )
-        RevenueDistributionToken(name_, symbol_, owner_, asset_, precision_)
-    {
+    ) RevenueDistributionToken(name_, symbol_, owner_, asset_, precision_) {
         instantWithdrawalFee = instantWithdrawalFee_;
         lockTime = lockTime_;
     }
