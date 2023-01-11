@@ -40,6 +40,12 @@ abstract contract LockedRevenueDistributionTokenBaseTest is Test {
         assertEq(asset.balanceOf(depositor_), balanceBefore_);
     }
 
+    function _mintAndApprove(uint256 assets_) internal {
+        asset.mint(alice, assets_);
+        vm.startPrank(alice);
+        asset.approve(address(vault), assets_);
+    }
+
     function _addAndVestRewards(uint256 assets_) internal {
         asset.mint(address(vault), assets_);
         vault.updateVestingSchedule();
