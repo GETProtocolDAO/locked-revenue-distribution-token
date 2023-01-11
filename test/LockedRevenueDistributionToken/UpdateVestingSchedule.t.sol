@@ -38,13 +38,21 @@ contract UpdateVestingScheduleTest is LockedRevenueDistributionTokenBaseTest {
         vault.updateVestingSchedule();
         assertEq(vault.vestingPeriodFinish(), block.timestamp + 2 weeks);
 
-        vm.warp(block.timestamp + 2 weeks - 25 hours);
+        // We wish to maintain a regular schedule when the veting period finishes, as determined by the first vesting
+        // period. Here we track Monday 12pm as the desired vesting period finish each time.
+        vm.warp(block.timestamp + 2 weeks - 25 hours); // Sunday 11pm
         vm.expectRevert("LRDT:UVS:STILL_VESTING");
         vault.updateVestingSchedule();
+        vm.warp(block.timestamp + 25 hours); // Warp to Monday 12pm
 
-        vm.warp(block.timestamp + 1 hours);
+        vm.warp(block.timestamp - 24 hours); // Warp to Sunday 12pm
         vault.updateVestingSchedule();
-        assertEq(vault.vestingPeriodFinish(), block.timestamp + 2 weeks);
+        assertEq(vault.vestingPeriodFinish(), block.timestamp + 2 weeks + 24 hours); // Expect Monday 12pm
+        vm.warp(block.timestamp + 24 hours); // Warp to Monday 12pm
+
+        vm.warp(block.timestamp + 2 weeks - 8 hours); // Warp to Monday 4am
+        vault.updateVestingSchedule();
+        assertEq(vault.vestingPeriodFinish(), block.timestamp + 2 weeks + 8 hours); // Expect Monday 12pm
     }
 
     function testCannotUpdateVestingScheduleZeroSupply() public {
