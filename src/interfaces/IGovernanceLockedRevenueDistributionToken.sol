@@ -5,8 +5,8 @@ interface IGovernanceLockedRevenueDistributionToken {
     /**
      * @notice        Represents a voting checkpoin, packed into a single word.
      * @custom:member fromBlock Block number after which the checkpoint applies.
-     * @custom:member shares    Amount of shares held & delegated to calculate point-int-time votes.
-     * @custom:member assets    Number of votes available, representing the amount of assets for delegated shares.
+     * @custom:member shares    Amount of shares held & delegated to calculate point-in-time votes.
+     * @custom:member assets    Amount of assets held & delegated to calculate point-in-time votes.
      */
     struct Checkpoint {
         uint32 fromBlock;

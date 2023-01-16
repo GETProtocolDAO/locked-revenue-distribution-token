@@ -17,7 +17,7 @@ contract RewardsTest is GovernanceLockedRevenueDistributionTokenBaseTest {
     vm.warp(block.timestamp + 2 weeks);
     assertEq(vault.balanceOfAssets(alice), 1.1 ether - 1); // Rounds down.
 
-    // Alice's voting power is currently unchanged, this is expected because Alice remains to be the only voter so he
+    // Alice's voting power is currently unchanged, this is expected because Alice remains to be the only voter so her
     // share of the total voting power remains the same.
     assertEq(vault.getVotes(alice), mintAmount);
     assertFalse(vault.getVotes(alice) == vault.balanceOfAssets(alice));

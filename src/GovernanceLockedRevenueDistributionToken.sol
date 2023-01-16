@@ -136,7 +136,7 @@ contract GovernanceLockedRevenueDistributionToken is
         override
         returns (uint32 fromBlock_, uint96 votes_)
     {
-        Checkpoint storage checkpoint_ = userCheckpoints[account_][pos_];
+        Checkpoint memory checkpoint_ = userCheckpoints[account_][pos_];
         fromBlock_ = checkpoint_.fromBlock;
         votes_ = checkpoint_.assets;
     }
@@ -311,7 +311,7 @@ contract GovernanceLockedRevenueDistributionToken is
             return (0, 0);
         }
 
-        Checkpoint storage checkpoint_ = _unsafeAccess(ckpts, high_ - 1);
+        Checkpoint memory checkpoint_ = _unsafeAccess(ckpts, high_ - 1);
         return (checkpoint_.shares, checkpoint_.assets);
     }
 
