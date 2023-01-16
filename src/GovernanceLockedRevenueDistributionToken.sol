@@ -53,9 +53,10 @@ contract GovernanceLockedRevenueDistributionToken is
         address asset_,
         uint256 precision_,
         uint256 instantWithdrawalFee_,
-        uint256 lockTime_
+        uint256 lockTime_,
+        uint256 initialSeed_
     )
-        LockedRevenueDistributionToken(name_, symbol_, owner_, asset_, precision_, instantWithdrawalFee_, lockTime_, 0)
+        LockedRevenueDistributionToken(name_, symbol_, owner_, asset_, precision_, instantWithdrawalFee_, lockTime_, initialSeed_)
     {}
 
     /*░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
