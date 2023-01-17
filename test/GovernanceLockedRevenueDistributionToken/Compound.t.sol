@@ -59,7 +59,7 @@ contract CompoundTest is GovernanceLockedRevenueDistributionTokenBaseTest {
 
         assertEq(vault.numCheckpoints(bob), 1);
 
-        (uint32 fromBlock_, uint112 votes_) = vault.checkpoints(bob, 0);
+        (uint32 fromBlock_, uint96 votes_) = vault.checkpoints(bob, 0);
         assertEq(fromBlock_, 1);
         assertEq(votes_, vault.convertToAssets(80));
         vm.stopPrank();

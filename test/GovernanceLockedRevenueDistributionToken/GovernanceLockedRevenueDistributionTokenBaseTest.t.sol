@@ -39,7 +39,7 @@ abstract contract GovernanceLockedRevenueDistributionTokenBaseTest is Test {
             symbol,
             address(this),
             address(asset),
-            type(uint112).max,
+            type(uint96).max,
             10,
             26 weeks,
             0

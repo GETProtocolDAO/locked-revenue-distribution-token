@@ -10,8 +10,8 @@ interface IGovernanceLockedRevenueDistributionToken {
      */
     struct Checkpoint {
         uint32 fromBlock;
-        uint112 votes;
-        uint112 shares;
+        uint96 votes;
+        uint96 shares;
     }
 
     /*░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -56,7 +56,7 @@ interface IGovernanceLockedRevenueDistributionToken {
     function userCheckpoints(address account_, uint256 pos_)
         external
         view
-        returns (uint32 fromBlock, uint112 votes, uint112 shares);
+        returns (uint32 fromBlock, uint96 votes, uint96 shares);
 
     /*░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
     ░░░░                         Public Functions                          ░░░░
