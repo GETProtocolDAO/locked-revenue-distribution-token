@@ -65,7 +65,9 @@ contract LockedRevenueDistributionToken is ILockedRevenueDistributionToken, Reve
             // RDT.deposit() cannot be called within the constructor as this uses immutable variables.
             // ERC20._mint()
             totalSupply += initialSeed_;
-            unchecked { balanceOf[receiver_] += initialSeed_; }
+            unchecked {
+                balanceOf[receiver_] += initialSeed_;
+            }
             emit Transfer(address(0), receiver_, initialSeed_);
 
             // RDT._mint()
@@ -89,7 +91,7 @@ contract LockedRevenueDistributionToken is ILockedRevenueDistributionToken, Reve
 
         instantWithdrawalFee = percentage_;
 
-        emit InstantWithdrawalFeeChanged(instantWithdrawalFee);
+        emit InstantWithdrawalFeeChanged(percentage_);
     }
 
     /**
@@ -101,7 +103,7 @@ contract LockedRevenueDistributionToken is ILockedRevenueDistributionToken, Reve
 
         lockTime = lockTime_;
 
-        emit LockTimeChanged(lockTime);
+        emit LockTimeChanged(lockTime_);
     }
 
     /**
@@ -209,7 +211,7 @@ contract LockedRevenueDistributionToken is ILockedRevenueDistributionToken, Reve
         // Aside from the following line, and a fixed vesting period, this function is unchanged from the Maple
         // implementation.
         require(vestingPeriodFinish <= block.timestamp + 24 hours, "LRDT:UVS:STILL_VESTING");
-        require(totalSupply != 0, "LRDT:UVS:ZERO_SUPPLY");
+        require(totalSupply > 0, "LRDT:UVS:ZERO_SUPPLY");
 
         // Update "y-intercept" to reflect current available asset.
         freeAssets_ = (freeAssets = totalAssets());
@@ -356,9 +358,9 @@ contract LockedRevenueDistributionToken is ILockedRevenueDistributionToken, Reve
             return (super.previewRedeem(shares_), 0);
         }
 
-        uint256 totalAssets_ = super.previewRedeem(shares_);
-        assets_ = (totalAssets_ * (100 - instantWithdrawalFee)) / 100;
-        fee_ = totalAssets_ - assets_;
+        uint256 assetsPlusFee_ = super.previewRedeem(shares_);
+        assets_ = (assetsPlusFee_ * (100 - instantWithdrawalFee)) / 100;
+        fee_ = assetsPlusFee_ - assets_;
     }
 
     /**
@@ -384,9 +386,9 @@ contract LockedRevenueDistributionToken is ILockedRevenueDistributionToken, Reve
             return (super.previewWithdraw(assets_), 0);
         }
 
-        uint256 totalAssets_ = (assets_ * 100) / (100 - instantWithdrawalFee);
-        shares_ = super.previewWithdraw(totalAssets_);
-        fee_ = totalAssets_ - assets_;
+        uint256 assetsPlusFee_ = (assets_ * 100) / (100 - instantWithdrawalFee);
+        shares_ = super.previewWithdraw(assetsPlusFee_);
+        fee_ = assetsPlusFee_ - assets_;
     }
 
     /**
