@@ -134,8 +134,9 @@ contract LockedRevenueDistributionToken is ILockedRevenueDistributionToken, Reve
         uint256 burnShares_ = request_.shares - refundShares_;
 
         if (burnShares_ > 0) {
-            _burn(address(this), burnShares_);
-            emit Redistribute(convertToAssets(burnShares_));
+            uint256 burnAssets_ = convertToAssets(burnShares_);
+            _burn(burnShares_, burnAssets_, address(this), address(this), address(this));
+            emit Redistribute(burnAssets_);
         }
 
         if (refundShares_ > 0) {
@@ -156,14 +157,24 @@ contract LockedRevenueDistributionToken is ILockedRevenueDistributionToken, Reve
 
         delete userWithdrawalRequests[msg.sender][pos_];
 
-        _transfer(address(this), msg.sender, request_.shares);
-        _burn(request_.shares, assets_, msg.sender, msg.sender, msg.sender);
+        uint256 executeShares_ = convertToShares(assets_);
+        uint256 burnShares_ = request_.shares - executeShares_;
+
+        if (burnShares_ > 0) {
+            uint256 burnAssets_ = convertToAssets(burnShares_);
+            _burn(burnShares_, burnAssets_, address(this), address(this), address(this));
+            emit Redistribute(burnAssets_ - fee_);
+        }
+
+        if (executeShares_ > 0) {
+            _transfer(address(this), msg.sender, executeShares_);
+            _burn(executeShares_, assets_, msg.sender, msg.sender, msg.sender);
+        }
 
         if (fee_ > 0) {
             emit WithdrawalFeePaid(msg.sender, msg.sender, msg.sender, fee_);
         }
 
-        emit Redistribute(convertToAssets(request_.shares) - assets_ - fee_);
         emit WithdrawalRequestExecuted(pos_);
     }
 
