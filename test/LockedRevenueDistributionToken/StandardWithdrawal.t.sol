@@ -554,4 +554,21 @@ contract StandardWithdrawalTest is LockedRevenueDistributionTokenBaseTest {
         vault.executeWithdrawalRequest(0);
         vm.stopPrank();
     }
+
+    function testPreviewWithdrawalRequest() public {
+        // Exempt Bob from fees.
+        vault.setWithdrawalFeeExemption(bob, true);
+
+        // Create a deposit and withdrawal request for 2 ether for Bob. This should be fee exempt.
+        _setUpDepositor(bob, 2 ether);
+        vault.createWithdrawalRequest(vault.balanceOf(bob));
+
+        // Create a deposit and withdrawal request for 1 ether for Alice. This should not be fee exempt.
+        _setUpDepositor(alice, 1 ether);
+        vault.createWithdrawalRequest(vault.balanceOf(alice));
+
+        (, uint256 bobWithdrawAmount, uint256 bobFee) = vault.previewWithdrawalRequest(0, bob);
+        assertEq(bobWithdrawAmount, 2 ether);
+        assertEq(bobFee, 0);
+    }
 }

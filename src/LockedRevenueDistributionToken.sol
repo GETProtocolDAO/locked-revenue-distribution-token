@@ -397,7 +397,7 @@ contract LockedRevenueDistributionToken is ILockedRevenueDistributionToken, Reve
         override
         returns (WithdrawalRequest memory request_, uint256 assets_, uint256 fee_)
     {
-        request_ = userWithdrawalRequests[msg.sender][pos_];
+        request_ = userWithdrawalRequests[owner_][pos_];
 
         if (withdrawalFeeExemptions[owner_] || request_.unlockedAt <= block.timestamp) {
             return (request_, request_.assets, 0);
