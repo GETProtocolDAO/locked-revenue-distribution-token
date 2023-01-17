@@ -533,4 +533,25 @@ contract StandardWithdrawalTest is LockedRevenueDistributionTokenBaseTest {
 
         assertApproxEqRel(vault.balanceOf(eve), vault.balanceOf(bob), 10e6);
     }
+
+    function testExecuteWithdrawalRedistributeUnderflow() public {
+        // Alice deposits 1 ether of underlying asset to the vault.
+        // Bob deposits 2 ether of underlying asset to the vault.
+        _setUpDepositor(alice, 1 ether);
+        _setUpDepositor(bob, 2 ether);
+
+        // Allow Bob to redeem early as seen in the instantWithdrawalFeeSharing test. This leaves positive yield in the
+        // vault for alice.
+        vault.redeem(vault.balanceOf(bob), bob, bob);
+        uint256 bobFee_ = _instantWithdrawalFee(2 ether); // == 0.3 ether
+        assertEq(asset.balanceOf(bob), 2 ether - bobFee_);
+        vm.stopPrank();
+
+        // Now attempt to withdraw our balance as Alice. This could throw an arithmetic underflow under an incorrect
+        // calculation in the Redistribute event.
+        vm.startPrank(alice);
+        vault.createWithdrawalRequest(vault.balanceOf(alice));
+        vault.executeWithdrawalRequest(0);
+        vm.stopPrank();
+    }
 }
