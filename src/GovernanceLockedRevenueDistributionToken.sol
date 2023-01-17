@@ -2,6 +2,7 @@
 pragma solidity ^0.8.7;
 
 import {ERC20} from "erc20/ERC20.sol";
+import {RevenueDistributionToken} from "revenue-distribution-token/RevenueDistributionToken.sol";
 import {LockedRevenueDistributionToken} from "./LockedRevenueDistributionToken.sol";
 import {IGovernanceLockedRevenueDistributionToken} from "./interfaces/IGovernanceLockedRevenueDistributionToken.sol";
 import {Math} from "./libraries/Math.sol";
@@ -114,6 +115,20 @@ contract GovernanceLockedRevenueDistributionToken is
     /**
      * @inheritdoc IGovernanceLockedRevenueDistributionToken
      */
+    function convertToAssets(uint256 shares_, uint256 blockNumber_)
+        public
+        view
+        virtual
+        override
+        returns (uint256 assets_)
+    {
+        (uint256 totalSupply_, uint256 totalAssets_) = _checkpointsLookup(totalSupplyCheckpoints, blockNumber_);
+        assets_ = totalSupply_ == 0 ? shares_ : (shares_ * totalAssets_) / totalSupply_;
+    }
+
+    /**
+     * @inheritdoc IGovernanceLockedRevenueDistributionToken
+     */
     function checkpoints(address account_, uint32 pos_)
         external
         view
@@ -121,9 +136,9 @@ contract GovernanceLockedRevenueDistributionToken is
         override
         returns (uint32 fromBlock_, uint96 votes_)
     {
-        Checkpoint storage checkpoint_ = userCheckpoints[account_][pos_];
+        Checkpoint memory checkpoint_ = userCheckpoints[account_][pos_];
         fromBlock_ = checkpoint_.fromBlock;
-        votes_ = checkpoint_.votes;
+        votes_ = checkpoint_.assets;
     }
 
     /**
@@ -142,7 +157,7 @@ contract GovernanceLockedRevenueDistributionToken is
             return 0;
         }
         uint256 shares_ = userCheckpoints[account_][pos_ - 1].shares;
-        votes_ = convertToAssets(shares_);
+        votes_ = convertToAssets(shares_, block.number);
     }
 
     /**
@@ -163,7 +178,8 @@ contract GovernanceLockedRevenueDistributionToken is
         returns (uint256 votes_)
     {
         require(blockNumber_ < block.number, "GLRDT:BLOCK_NOT_MINED");
-        votes_ = _checkpointsLookup(userCheckpoints[account_], blockNumber_, true);
+        (uint256 shares_,) = _checkpointsLookup(userCheckpoints[account_], blockNumber_);
+        votes_ = convertToAssets(shares_, blockNumber_);
     }
 
     /**
@@ -185,7 +201,7 @@ contract GovernanceLockedRevenueDistributionToken is
      */
     function getPastTotalSupply(uint256 blockNumber_) public view virtual override returns (uint256 totalSupply_) {
         require(blockNumber_ < block.number, "GLRDT:BLOCK_NOT_MINED");
-        totalSupply_ = _checkpointsLookup(totalSupplyCheckpoints, blockNumber_, false);
+        (totalSupply_,) = _checkpointsLookup(totalSupplyCheckpoints, blockNumber_);
     }
 
     /*░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -193,23 +209,27 @@ contract GovernanceLockedRevenueDistributionToken is
     ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░*/
 
     /**
-     * @inheritdoc ERC20
+     * @inheritdoc RevenueDistributionToken
      * @dev Snapshots the totalSupply after it has been increased.
      */
-    function _mint(address owner_, uint256 amount_) internal virtual override {
-        super._mint(owner_, amount_);
-        _moveVotingPower(address(0), delegates[owner_], amount_);
-        _writeCheckpoint(totalSupplyCheckpoints, _add, amount_);
+    function _mint(uint256 shares_, uint256 assets_, address receiver_, address caller_) internal virtual override {
+        super._mint(shares_, assets_, receiver_, caller_);
+        _moveVotingPower(address(0), delegates[receiver_], shares_);
+        _writeCheckpoint(totalSupplyCheckpoints, _add, shares_);
     }
 
     /**
-     * @inheritdoc ERC20
+     * @inheritdoc RevenueDistributionToken
      * @dev Snapshots the totalSupply after it has been decreased.
      */
-    function _burn(address owner_, uint256 amount_) internal virtual override {
-        super._burn(owner_, amount_);
-        _moveVotingPower(delegates[owner_], address(0), amount_);
-        _writeCheckpoint(totalSupplyCheckpoints, _subtract, amount_);
+    function _burn(uint256 shares_, uint256 assets_, address receiver_, address owner_, address caller_)
+        internal
+        virtual
+        override
+    {
+        super._burn(shares_, assets_, receiver_, owner_, caller_);
+        _moveVotingPower(delegates[owner_], address(0), shares_);
+        _writeCheckpoint(totalSupplyCheckpoints, _subtract, shares_);
     }
 
     /**
@@ -244,13 +264,13 @@ contract GovernanceLockedRevenueDistributionToken is
      * @notice Lookup a value in a list of (sorted) checkpoints.
      * @param  ckpts        List of checkpoints to find within.
      * @param  blockNumber_ Block number of latest checkpoint.
-     * @param  isVotes_     Return votes value when true, shares when false.
-     * @param  amount_      Amount of shares or votes at checkpoint.
+     * @param  shares_      Amount of shares at checkpoint.
+     * @param  assets_      Amount of assets at checkpoint.
      */
-    function _checkpointsLookup(Checkpoint[] storage ckpts, uint256 blockNumber_, bool isVotes_)
+    function _checkpointsLookup(Checkpoint[] storage ckpts, uint256 blockNumber_)
         private
         view
-        returns (uint256 amount_)
+        returns (uint96 shares_, uint96 assets_)
     {
         // We run a binary search to look for the earliest checkpoint taken after `blockNumber_`.
         //
@@ -287,8 +307,12 @@ contract GovernanceLockedRevenueDistributionToken is
             }
         }
 
-        return
-            high_ == 0 ? 0 : (isVotes_ ? _unsafeAccess(ckpts, high_ - 1).votes : _unsafeAccess(ckpts, high_ - 1).shares);
+        if (high_ == 0) {
+            return (0, 0);
+        }
+
+        Checkpoint memory checkpoint_ = _unsafeAccess(ckpts, high_ - 1);
+        return (checkpoint_.shares, checkpoint_.assets);
     }
 
     /**
@@ -332,13 +356,13 @@ contract GovernanceLockedRevenueDistributionToken is
 
         if (pos_ > 0 && oldCkpt_.fromBlock == block.number) {
             _unsafeAccess(ckpts, pos_ - 1).shares = _toUint96(newWeight_);
-            _unsafeAccess(ckpts, pos_ - 1).votes = _toUint96(convertToAssets(newWeight_));
+            _unsafeAccess(ckpts, pos_ - 1).assets = _toUint96(convertToAssets(newWeight_));
         } else {
             ckpts.push(
                 Checkpoint({
                     fromBlock: _toUint32(block.number),
                     shares: _toUint96(newWeight_),
-                    votes: _toUint96(convertToAssets(newWeight_))
+                    assets: _toUint96(convertToAssets(newWeight_))
                 })
             );
         }

@@ -5,13 +5,13 @@ interface IGovernanceLockedRevenueDistributionToken {
     /**
      * @notice        Represents a voting checkpoin, packed into a single word.
      * @custom:member fromBlock Block number after which the checkpoint applies.
-     * @custom:member shares    Amount of shares held & delegated to calculate point-int-time votes.
-     * @custom:member votes     Number of votes available, representing the amount of assets for delegated shares.
+     * @custom:member shares    Amount of shares held & delegated to calculate point-in-time votes.
+     * @custom:member assets    Amount of assets held & delegated to calculate point-in-time votes.
      */
     struct Checkpoint {
         uint32 fromBlock;
-        uint96 votes;
         uint96 shares;
+        uint96 assets;
     }
 
     /*░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -47,16 +47,16 @@ interface IGovernanceLockedRevenueDistributionToken {
     /**
      * @notice Get the `pos`-th checkpoint for `account`.
      * @dev    Unused in Compound governance specification, exposes underlying Checkpoint struct.
-     * @param  account_  Account that holds checkpoint.
-     * @param  pos_      Index/position of the checkpoint.
-     * @return fromBlock Block in which the checkpoint is valid from.
-     * @return votes     Total amount of underlying assets (votes) derived from shares.
-     * @return shares    Total amount of shares within the checkpoint.
+     * @param  account_   Account that holds checkpoint.
+     * @param  pos_       Index/position of the checkpoint.
+     * @return fromBlock  Block in which the checkpoint is valid from.
+     * @return shares     Total amount of shares within the checkpoint.
+     * @return assets     Total amount of underlying assets derived from shares at time of checkpoint.
      */
     function userCheckpoints(address account_, uint256 pos_)
         external
         view
-        returns (uint32 fromBlock, uint96 votes, uint96 shares);
+        returns (uint32 fromBlock, uint96 shares, uint96 assets);
 
     /*░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
     ░░░░                         Public Functions                          ░░░░
@@ -86,6 +86,14 @@ interface IGovernanceLockedRevenueDistributionToken {
     ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░*/
 
     /**
+     * @notice Historical conversion from shares to assets, used for calculating voting power on past blocks.
+     * @param  shares_      Amount of shares to conver to assets.
+     * @param  blockNumber_ Block to use for checkpoint lookup.
+     * @return assets_      Amount of assets held at block, representing voting power.
+     */
+    function convertToAssets(uint256 shares_, uint256 blockNumber_) external view returns (uint256 assets_);
+
+    /**
      * @notice Get the Compound-compatible `pos`-th checkpoint for `account`.
      * @dev    Maintains Compound `checkpoints` compatibility by returning votes as a uint96 and omitting shares.
      * @param  account_   Account that holds checkpoint.
@@ -103,7 +111,8 @@ interface IGovernanceLockedRevenueDistributionToken {
     /**
      * @notice Returns the current amount of votes that `account` has.
      * @dev    The delegated balance is denominated in the amount of shares delegated to an account, but voting power
-     * is measured in assets. A conversion is done using the delegated shares to get the current assets.
+     * is measured in assets. A conversion is done using the delegated shares to get the assets as of the latest
+     * checkpoint. This ensures that all stakers' shares are converted to assets at the same rate.
      * @param  account_ Address of account to get votes for.
      * @return votes_   Amount of voting power as the number of assets for delegated shares.
      */
