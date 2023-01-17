@@ -41,7 +41,8 @@ abstract contract GovernanceLockedRevenueDistributionTokenBaseTest is Test {
             address(asset),
             type(uint112).max,
             10,
-            26 weeks
+            26 weeks,
+            0
         );
         vm.warp(start); // Warp to non-zero timestamp
     }
