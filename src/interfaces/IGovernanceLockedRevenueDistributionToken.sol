@@ -39,12 +39,6 @@ interface IGovernanceLockedRevenueDistributionToken {
     ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░*/
 
     /**
-     * @notice Returns the delegate typehash, used in `delegateBySig`.
-     * @return delegateTypehash_ The delegate typehash.
-     */
-    function DELEGATE_TYPEHASH() external view returns (bytes32 delegateTypehash_);
-
-    /**
      * @notice Get the `pos`-th checkpoint for `account`.
      * @dev    Unused in Compound governance specification, exposes underlying Checkpoint struct.
      * @param  account_   Account that holds checkpoint.

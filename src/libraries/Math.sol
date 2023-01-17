@@ -73,13 +73,13 @@ library Math {
         // every iteration). We thus need at most 7 iteration to turn our partial result with one bit of precision
         // into the expected uint128 result.
         unchecked {
-            result = result + a / result >> 1;
-            result = result + a / result >> 1;
-            result = result + a / result >> 1;
-            result = result + a / result >> 1;
-            result = result + a / result >> 1;
-            result = result + a / result >> 1;
-            result = result + a / result >> 1;
+            result = (result + a / result) >> 1;
+            result = (result + a / result) >> 1;
+            result = (result + a / result) >> 1;
+            result = (result + a / result) >> 1;
+            result = (result + a / result) >> 1;
+            result = (result + a / result) >> 1;
+            result = (result + a / result) >> 1;
             return min(result, a / result);
         }
     }

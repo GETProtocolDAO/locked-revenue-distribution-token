@@ -40,8 +40,7 @@ contract GovernanceLockedRevenueDistributionToken is
     LockedRevenueDistributionToken
 {
     // DELEGATE_TYPEHASH = keccak256("Delegation(address delegatee,uint256 nonce,uint256 expiry)");
-    bytes32 public constant override DELEGATE_TYPEHASH =
-        0xe48329057bfd03d55e49b547132e39cffd9c1820ad7b9d4c5307691425d15adf;
+    bytes32 private constant DELEGATE_TYPEHASH = 0xe48329057bfd03d55e49b547132e39cffd9c1820ad7b9d4c5307691425d15adf;
 
     mapping(address => address) public delegates;
     mapping(address => Checkpoint[]) public override userCheckpoints;
@@ -57,7 +56,16 @@ contract GovernanceLockedRevenueDistributionToken is
         uint256 lockTime_,
         uint256 initialSeed_
     )
-        LockedRevenueDistributionToken(name_, symbol_, owner_, asset_, precision_, instantWithdrawalFee_, lockTime_, initialSeed_)
+        LockedRevenueDistributionToken(
+            name_,
+            symbol_,
+            owner_,
+            asset_,
+            precision_,
+            instantWithdrawalFee_,
+            lockTime_,
+            initialSeed_
+        )
     {}
 
     /*░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
@@ -67,7 +75,7 @@ contract GovernanceLockedRevenueDistributionToken is
     /**
      * @inheritdoc IGovernanceLockedRevenueDistributionToken
      */
-    function delegate(address delegatee_) public virtual override {
+    function delegate(address delegatee_) external virtual override {
         _delegate(msg.sender, delegatee_);
     }
 
@@ -199,7 +207,7 @@ contract GovernanceLockedRevenueDistributionToken is
     /**
      * @inheritdoc IGovernanceLockedRevenueDistributionToken
      */
-    function getPastTotalSupply(uint256 blockNumber_) public view virtual override returns (uint256 totalSupply_) {
+    function getPastTotalSupply(uint256 blockNumber_) external view virtual override returns (uint256 totalSupply_) {
         require(blockNumber_ < block.number, "GLRDT:BLOCK_NOT_MINED");
         (totalSupply_,) = _checkpointsLookup(totalSupplyCheckpoints, blockNumber_);
     }
@@ -317,8 +325,9 @@ contract GovernanceLockedRevenueDistributionToken is
 
     /**
      * @notice Move voting power from one account to another.
-     * @param  src_ Source account to withdraw voting power from.
-     * @param  dst_ Destination account to deposit voting power to.
+     * @param  src_    Source account to withdraw voting power from.
+     * @param  dst_    Destination account to deposit voting power to.
+     * @param  amount_ Ammont of voring power to move, measured in shares.
      */
     function _moveVotingPower(address src_, address dst_, uint256 amount_) private {
         if (src_ != dst_ && amount_ > 0) {

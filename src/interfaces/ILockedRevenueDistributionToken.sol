@@ -186,8 +186,8 @@ interface ILockedRevenueDistributionToken {
 
     /**
      * @notice Executes an existing withdrawal request that has passed its unlock date.
-     * @dev    Intentical to parent implementation but made public by fixed vesting period and removal of owner check.
-     * @return issuanceRate_ Slope of release of newly added assets.
+     * @dev    Identical to parent implementation but made public by fixed vesting period and removal of owner check.
+     * @return issuanceRate_ Slope of release of newly added assets, scaled up by `precision`.
      * @return freeAssets_   Amount of assets currently released to stakers.
      */
     function updateVestingSchedule() external returns (uint256 issuanceRate_, uint256 freeAssets_);
@@ -221,7 +221,9 @@ interface ILockedRevenueDistributionToken {
      * @param  minAssets_ Minimum amount of assets to be returned.
      * @return assets_    Amount of assets returned.
      */
-    function redeem(uint256 shares_, address receiver_, address owner_, uint256 minAssets_) external returns (uint256 assets_);
+    function redeem(uint256 shares_, address receiver_, address owner_, uint256 minAssets_)
+        external
+        returns (uint256 assets_);
 
     /**
      * @notice ERC5143 slippage-protected withdraw method. The transaction will revert if the shares to be deducted is
@@ -232,7 +234,9 @@ interface ILockedRevenueDistributionToken {
      * @param  maxShares_ Minimum amount of shares to be deducted.
      * @return shares_    Amount of shares deducted.
      */
-    function withdraw(uint256 assets_, address receiver_, address owner_, uint256 maxShares_) external returns (uint256 shares_);
+    function withdraw(uint256 assets_, address receiver_, address owner_, uint256 maxShares_)
+        external
+        returns (uint256 shares_);
 
     /*░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
     ░░░░                          View Functions                           ░░░░
