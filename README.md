@@ -114,6 +114,14 @@ This means that the contract address must be calculated in advance so that an ap
 
 [Slither](https://github.com/crytic/slither) and [Mythril](https://github.com/ConsenSys/mythril) have been configured to be ran with `make` using their official Docker containers. These can be ran with `make slither` and `make myth`.
 
+## Audit Reports
+
+On Oct 26th, 2022 the GET Protocol DAO voted to fund [yAcademy](https://yacademy.dev/) to audit the GovernanceLockedRevenueDistributionToken and LockedRevenueDistributionToken contracts at v1.0.0 via a [Snapshot vote](https://snapshot.org/#/getprotocolsnapshot.eth/proposal/0x4cd34e63736b3bd189e99e4c45eeef9ac37fbff330553fa25b50b95b6ce11a54). This has now been completed and the audit report is available for viewing using the links below.
+
+| Auditor  | Commit    | Links                                                                                                                                                                                                                                                   |
+| -------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| yAcademy | `ab272ce` | [Report](https://reports.yacademy.dev/docs/12-2022-GET-Protocol-Staking/), [Archive](https://web.archive.org/web/20230118040323/https://reports.yacademy.dev/docs/12-2022-GET-Protocol-Staking/), [PDF](audits/12-2022-GET-Protocol-Staking-Report.pdf) |
+
 ## About GET Protocol DAO
 
 ![GET Protocol Logo](docs/images/get-protocol-logo.png)
