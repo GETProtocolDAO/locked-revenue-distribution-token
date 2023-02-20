@@ -12,7 +12,7 @@ contract LockingTest is GovernanceLockedRevenueDistributionTokenBaseTest {
         mint(alice, mintAmount);
     }
 
-    function afterEach_() internal {
+    function _afterEach() internal {
         assertEq(vault.getVotes(alice), aliceVotes);
         assertEq(vault.getVotes(address(vault)), vaultVotes);
 
@@ -31,7 +31,7 @@ contract LockingTest is GovernanceLockedRevenueDistributionTokenBaseTest {
         aliceVotes = 0;
         vaultVotes = 0;
 
-        afterEach_();
+        _afterEach();
     }
 
     function testCreateWithdrawalRequestWithSenderDelegation() public {
@@ -42,7 +42,7 @@ contract LockingTest is GovernanceLockedRevenueDistributionTokenBaseTest {
         aliceVotes = mintAmount - 0.5 ether;
         vaultVotes = 0;
 
-        afterEach_();
+        _afterEach();
     }
 
     function testCancelWithdrawalRequestWithNoDelegation() public {
@@ -53,17 +53,41 @@ contract LockingTest is GovernanceLockedRevenueDistributionTokenBaseTest {
         aliceVotes = 0;
         vaultVotes = 0;
 
-        afterEach_();
+        _afterEach();
     }
 
     function testCancelWithdrawalRequestWithSenderDelegation() public {
         vm.startPrank(alice);
+        vault.delegate(alice);
         vault.createWithdrawalRequest(0.5 ether);
         vault.cancelWithdrawalRequest(0);
+
+        aliceVotes = 1 ether;
+        vaultVotes = 0;
+
+        _afterEach();
+    }
+
+    function testExecuteWithdrawalRequestWithNoDelegation() public {
+        vm.startPrank(alice);
+        vault.createWithdrawalRequest(0.5 ether);
+        vault.executeWithdrawalRequest(0);
 
         aliceVotes = 0;
         vaultVotes = 0;
 
-        afterEach_();
+        _afterEach();
+    }
+
+    function testExecuteWithdrawalRequestWithSenderDelegation() public {
+        vm.startPrank(alice);
+        vault.delegate(alice);
+        vault.createWithdrawalRequest(0.5 ether);
+        vault.executeWithdrawalRequest(0);
+
+        aliceVotes = mintAmount - 0.5 ether;
+        vaultVotes = 0 ether;
+
+        _afterEach();
     }
 }
