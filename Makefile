@@ -36,8 +36,9 @@ mint-mockerc20:
 
 .PHONY: deploy-lrdt
 deploy-lrdt:
-	@cast send $(ASSET) "approve(address,uint256)" $$(cast compute-address $(FROM) --nonce $$(($$(cast nonce $(FROM)) + 1)) | sed 's/Computed Address: //') "$(INITIAL_SEED)" \
-		--private-key $(PRIVATE_KEY)
+	@cast send $(ASSET) "approve(address,uint256)" $$(cast compute-address $(FROM) --nonce $$(($$(cast nonce --rpc-url $(RPC_URL) $(FROM)) + 1)) | sed 's/Computed Address: //') "$(INITIAL_SEED)" \
+		--private-key $(PRIVATE_KEY) \
+		--rpc-url $(RPC_URL)
 	@forge create src/LockedRevenueDistributionToken.sol:LockedRevenueDistributionToken \
 		--rpc-url $(RPC_URL) \
 		--from $(FROM) \
@@ -48,12 +49,13 @@ deploy-lrdt:
 
 .PHONY: deploy-glrdt
 deploy-glrdt:
-	@cast send $(ASSET) "approve(address,uint256)" $$(cast compute-address $(FROM) --nonce $$(($$(cast nonce $(FROM)) + 1)) | sed 's/Computed Address: //') "$(INITIAL_SEED)" \
-		--private-key $(PRIVATE_KEY)
+	@cast send $(ASSET) "approve(address,uint256)" $$(cast compute-address $(FROM) --nonce $$(($$(cast nonce --rpc-url $(RPC_URL) $(FROM)) + 1)) | sed 's/Computed Address: //') "$(INITIAL_SEED)" \
+		--private-key $(PRIVATE_KEY) \
+		--rpc-url $(RPC_URL)
 	@forge create src/GovernanceLockedRevenueDistributionToken.sol:GovernanceLockedRevenueDistributionToken \
 		--rpc-url $(RPC_URL) \
 		--from $(FROM) \
 		--private-key $(PRIVATE_KEY) \
 		--chain $(CHAIN_ID) \
-		$(if $(VERIFY == 1),--verify) \
+		$(if $(VERIFY),--verify) \
 		--constructor-args "$(NAME)" "$(SYMBOL)" "$(OWNER)" "$(ASSET)" $(PRECISION) $(INSTANT_WITHDRAWAL_FEE) $$(($(LOCK_TIME_WEEKS) * 7 * 24 * 60 * 60)) $(INITIAL_SEED)

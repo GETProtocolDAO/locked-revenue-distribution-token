@@ -12,7 +12,7 @@ contract TransfersTest is GovernanceLockedRevenueDistributionTokenBaseTest {
         mint(alice, mintAmount);
     }
 
-    function afterEach_() internal {
+    function _afterEach() internal {
         assertEq(vault.getVotes(alice), aliceVotes);
         assertEq(vault.getVotes(recipient), recipientVotes);
 
@@ -33,7 +33,7 @@ contract TransfersTest is GovernanceLockedRevenueDistributionTokenBaseTest {
         aliceVotes = 0;
         recipientVotes = 0;
 
-        afterEach_();
+        _afterEach();
     }
 
     function testTransferWithSenderDelegation() public {
@@ -49,7 +49,7 @@ contract TransfersTest is GovernanceLockedRevenueDistributionTokenBaseTest {
 
         aliceVotes = mintAmount - 1;
         recipientVotes = 0;
-        afterEach_();
+        _afterEach();
     }
 
     function testTransferWithReceiverDelegation() public {
@@ -65,7 +65,7 @@ contract TransfersTest is GovernanceLockedRevenueDistributionTokenBaseTest {
 
         aliceVotes = 0;
         recipientVotes = 1;
-        afterEach_();
+        _afterEach();
     }
 
     function testTransferWithFullDelegation() public {
@@ -84,6 +84,6 @@ contract TransfersTest is GovernanceLockedRevenueDistributionTokenBaseTest {
 
         aliceVotes = mintAmount - 1;
         recipientVotes = 1;
-        afterEach_();
+        _afterEach();
     }
 }

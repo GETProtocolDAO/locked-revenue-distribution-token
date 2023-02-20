@@ -101,7 +101,7 @@ Deployments can be tested locally using a mock ERC20 contract:
 ```
 make deploy-mockerc20
 make mint-mockerc20 ASSET="<address>"
-make deploy-glrdt NAME="xASSET" SYMBOL="xASSET" OWNER="<address>" ASSET="<address>" VERIFY=0
+make deploy-glrdt NAME="xASSET" SYMBOL="xASSET" OWNER="<address>" ASSET="<address>" VERIFY=""
 ```
 
 #### Setting the INITIAL_SEED
